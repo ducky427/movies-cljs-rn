@@ -10,10 +10,10 @@
 (def TouchableHighlight (r/adapt-react-class (.-TouchableHighlight js/React)))
 (def NavigatorIOS (r/adapt-react-class (.-NavigatorIOS js/React)))
 (def StyleSheet (r/adapt-react-class (.-StyleSheet js/React)))
-(def PixelRatio (r/adapt-react-class (.-PixelRatio js/React)))
 (def ScrollView (r/adapt-react-class (.-ScrollView js/React)))
 (def ActivityIndicatorIOS (r/adapt-react-class (.-ActivityIndicatorIOS js/React)))
 (def TextInput (r/adapt-react-class (.-TextInput js/React)))
 (def ListView (r/adapt-react-class (.-ListView js/React)))
 
 (def DataSource js/React.ListView.DataSource)
+(def PixelRatio (.-PixelRatio js/React))
