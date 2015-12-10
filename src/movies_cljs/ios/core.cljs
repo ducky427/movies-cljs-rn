@@ -15,8 +15,11 @@
        [mic/Text {:style {:fontSize 30 :fontWeight "100" :marginBottom 20 :textAlign "center"}} @greeting]
        [mic/Image {:source logo-img
                :style  {:width 80 :height 80 :marginBottom 30}}]
-       [mic/Touchable-Highlight {:style {:backgroundColor "#999" :padding 10 :borderRadius 5}}
+       [mic/TouchableHighlight {:style {:backgroundColor "#999" :padding 10 :borderRadius 5}}
         [mic/Text {:style {:color "white" :textAlign "center" :fontWeight "bold"}} "press me"]]])))
+
+(defn movies-app
+  [])
 
 (defn mount-root []
   (reagent/render [widget] 1))
