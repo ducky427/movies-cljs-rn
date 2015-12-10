@@ -60,8 +60,9 @@
                [(:rowSeparator styles)
                 (:rowSeparatorHide styles)]
                (:rowSeparator styles))]
-    [mic/View {:key (str "SEP_" section "_" row)
-               :style sty}]))
+    (reagent/as-element
+     [mic/View {:key (str "SEP_" section "_" row)
+                :style sty}])))
 
 (defn select-movie
   [nav movie]
@@ -71,13 +72,12 @@
 
 (defn render-row
   [nav movie section row highlight-row-fn]
-  (js/console.log (gobj/get movie "id"))
-  [mmc/MovieCell {:key (gobj/get movie "id")
-                  :onSelect #(select-movie nav
-                                           movie)
-                  :onHighlight #(highlight-row-fn section row)
-                  :onUnhighlight #(highlight-row-fn nil nil)
-                  :movie movie}])
+  (reagent/as-element
+   [mmc/MovieCell {:key (gobj/get movie "id")
+                   :onSelect #(select-movie nav movie)
+                   :onHighlight #(highlight-row-fn section row)
+                   :onUnhighlight #(highlight-row-fn nil nil)
+                   :movie movie}]))
 
 (defn render-search-screen
   [d]
@@ -95,12 +95,11 @@
            :keyboardDismissMode "on-drag"
            :keyboardShouldPersistTaps true
            :showsVerticalScrollIndicator true
-           :renderSeparator #(reagent/as-element [render-separator %1 %2 %3])
+           :renderSeparator #(render-separator %1 %2 %3)
            :dataSource @d-s
-           :renderRow #(reagent/as-element
-                        [render-row
-                         (gobj/get (nth (gobj/get (.-props d) "argv") 1) "navigator")
-                         %1 %2 %3 %4])}])])))
+           :renderRow #(render-row
+                        (gobj/get (nth (gobj/get (.-props d) "argv") 1) "navigator")
+                        %1 %2 %3 %4)}])])))
 
 (def SearchScreen-comp (reagent/create-class {:render (fn [d]
                                                         [render-search-screen d])
