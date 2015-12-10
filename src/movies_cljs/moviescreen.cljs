@@ -58,22 +58,22 @@
      ^{:key n} [mic/Text {:style (:castActor styles)} "- " n])])
 
 (defn render
-  [movie]
-  [mic/ScrollView {:contentContainerStyle (:contentContainer styles)}
-   [mic/View {:style (:mainSection styles)}
-    [mic/Image {:source (util/get-image-source movie "det")
-                :style (:detailsImage styles)}]
-    [mic/View {:style (:rightPane styles)}
-     [mic/Text {:style (:movieTitle styles)} (gobj/get movie "title")]
-     [mic/Text (gobj/get movie "year")]
-     [mic/View {:style (:mpaaWrapper styles)}
-      [mic/Text {:style (:mpaaText styles)} (gobj/get movie "mpaa_rating")]]
-     [Ratings (gobj/get movie "ratings")]]]
-   [mic/View {:style (:separator styles)}]
-   [mic/Text (gobj/get movie "synopsis")]
-   [mic/View {:style (:separator styles)}]
-   [Cast (gobj/get movie "abridged_cast")]])
+  [props]
+  (let [movie (clj->js props)]
+    [mic/ScrollView {:contentContainerStyle (:contentContainer styles)}
+     [mic/View {:style (:mainSection styles)}
+      [mic/Image {:source (util/get-image-source movie "det")
+                  :style (:detailsImage styles)}]
+      [mic/View {:style (:rightPane styles)}
+       [mic/Text {:style (:movieTitle styles)} (gobj/get movie "title")]
+       [mic/Text (gobj/get movie "year")]
+       [mic/View {:style (:mpaaWrapper styles)}
+        [mic/Text {:style (:mpaaText styles)} (gobj/get movie "mpaa_rating")]]
+       [Ratings (gobj/get movie "ratings")]]]
+     [mic/View {:style (:separator styles)}]
+     [mic/Text (gobj/get movie "synopsis")]
+     [mic/View {:style (:separator styles)}]
+     [Cast (gobj/get movie "abridged_cast")]]))
 
-(def MovieScreen (reagent/create-class {:reagent-render (fn [movie]
-                                                          [render movie])
-                                        :display-name "Movie"}))
+(def MovieScreen
+  (reagent/reactify-component render))
