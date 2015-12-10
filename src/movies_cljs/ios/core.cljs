@@ -1,29 +1,112 @@
 (ns ^:figwheel-load movies-cljs.ios.core
-  (:require-macros [env.require-img :refer [require-img]])
-  (:require [reagent.core :as reagent]
+  (:require [clojure.string :as string]
+            [goog.object :as gobj]
+            [reagent.core :as reagent]
             [re-frame.core :refer [subscribe dispatch dispatch-sync]]
+            [movies-cljs.search :as ms]
+            [movies-cljs.moviecell :as mmc]
             [movies-cljs.ios.components :as mic]
+            [movies-cljs.ios.searchbar :as msb]
             [movies-cljs.handlers]
             [movies-cljs.subs]))
 
-(def logo-img (require-img "./images/cljs.png"))
+(def TimerMixin (js/require "react-timer-mixin/TimerMixin.js"))
 
-(defn widget []
-  (let [greeting (subscribe [:get-greeting])]
+(defn row-has-changed [x y]
+  (let [row-1 (js->clj x :keywordize-keys true)
+        row-2 (js->clj y :keywordize-keys true)]
+    (not= row-1 row-2)))
+
+(def app-db {:loading? false
+             :loading-tail? false
+             :filter ""
+             :data-source (mic/DataSource. #js {:rowHasChanged row-has-changed})})
+
+(def styles {:container {:flex 1
+                         :backgroundColor "white"}
+             :noMoviesText {:marginTop 80
+                            :color "#888888"}
+             :separator {:height 1
+                         :backgroundColor "#eeeeee"}
+             :centerText {:alignItems "center"}
+             :rowSeparator {:backgroundColor "rgba(0, 0, 0, 0.1)"
+                            :height 1
+                            :marginLeft 4}
+             :rowSeparatorHide {:opacity 0.0}})
+
+(defn on-search-change
+  [d e]
+  (let [qry (.. e -nativeEvent -text toLowerCase)]
+    (.clearTimeout d @ms/timeout-id)
+    (swap! ms/timeout-id (fn [_]
+                           (.setTimeout d
+                                        (fn []
+                                          (ms/search-movies qry))
+                                        400)))))
+
+(defn NoMovies
+  [qry loading?]
+  (let [txt  (cond
+               (not (string/blank? qry)) (str "No results for " qry)
+               (not loading?) "No movies found"
+               :else "")]
+    [mic/View {:style [(:container styles) (:centerText styles)]}
+     [mic/Text {:style (:noMoviesText styles)} txt]]))
+
+(defn render-separator
+  [section row adj-row-highlighted?]
+  (let [sty  (if adj-row-highlighted?
+               [(:rowSeparator styles)
+                (:rowSeparatorHide styles)]
+               (:rowSeparator styles))]
+    [mic/View {:key (str "SEP_" section "_" row)
+               :style sty}]))
+
+(defn render-row
+  [movie section row highlight-row-fn]
+  [mmc/MovieCell {:key (gobj/get movie "id")
+                  :onSelect #(js/console.log movie)
+                  :onHighlight #(highlight-row-fn section row)
+                  :onUnhighlight #(highlight-row-fn nil nil)
+                  :movie movie}])
+
+(defn render-search-screen
+  [d]
+  (let [loading? (subscribe [:loading?])
+        qry      (subscribe [:get-filter])
+        d-s      (subscribe [:get-data-source])]
     (fn []
-      [mic/View {:style {:flexDirection "column" :margin 40 :alignItems "center"}}
-       [mic/Text {:style {:fontSize 30 :fontWeight "100" :marginBottom 20 :textAlign "center"}} @greeting]
-       [mic/Image {:source logo-img
-               :style  {:width 80 :height 80 :marginBottom 30}}]
-       [mic/TouchableHighlight {:style {:backgroundColor "#999" :padding 10 :borderRadius 5}}
-        [mic/Text {:style {:color "white" :textAlign "center" :fontWeight "bold"}} "press me"]]])))
+      [mic/View {:style (:container styles)}
+       [msb/SearchBar @loading? (partial on-search-change d)]
+       [mic/View {:style (:separator styles)}]
+       (if (zero? (.getRowCount @d-s))
+         [NoMovies @qry @loading?]
+         [mic/ListView
+          {:automaticallyAdjustContentInsets false
+           :keyboardDismissMode "on-drag"
+           :keyboardShouldPersistTaps true
+           :showsVerticalScrollIndicator true
+           :renderSeparator #(reagent/as-element [render-separator %1 %2 %3])
+           :dataSource @d-s
+           :renderRow #(reagent/as-element [render-row %1 %2 %3 %4])
+           }])])))
+
+(def SearchScreen-comp (reagent/create-class {:render (fn [d]
+                                                        [render-search-screen d])
+                                              :component-did-mount (fn []
+                                                                     (ms/search-movies ""))
+                                              :mixins #js [TimerMixin]
+                                              :display-name "Search Screen"}))
 
 (defn movies-app
-  [])
+  []
+  [mic/NavigatorIOS {:style (:container styles)
+                     :initialRoute {:title "Movies"
+                                    :component SearchScreen-comp}}])
 
 (defn mount-root []
-  (reagent/render [widget] 1))
+  (reagent/render [movies-app] 1))
 
 (defn ^:export init []
-  (dispatch-sync [:initialize-db])
+  (dispatch-sync [:initialize-db app-db])
   (.registerRunnable mic/App-Registry "MoviesCljs" #(mount-root)))

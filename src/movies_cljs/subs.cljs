@@ -3,7 +3,19 @@
   (:require [re-frame.core :refer [register-sub]]))
 
 (register-sub
- :get-greeting
+ :get-filter
  (fn [db _]
    (reaction
-    (get @db :greeting))))
+    (get @db :filter))))
+
+(register-sub
+ :get-data-source
+ (fn [db _]
+   (reaction
+    (get @db :data-source))))
+
+(register-sub
+ :loading?
+ (fn [db _]
+   (reaction
+    (get @db :loading?))))
