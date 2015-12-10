@@ -71,6 +71,7 @@
 
 (defn render-row
   [nav movie section row highlight-row-fn]
+  (js/console.log (gobj/get movie "id"))
   [mmc/MovieCell {:key (gobj/get movie "id")
                   :onSelect #(select-movie nav
                                            movie)
@@ -96,8 +97,10 @@
            :showsVerticalScrollIndicator true
            :renderSeparator #(reagent/as-element [render-separator %1 %2 %3])
            :dataSource @d-s
-           :renderRow #(reagent/as-element [render-row (gobj/get (nth (gobj/get (.-props d) "argv") 1) "navigator")
-                                            %1 %2 %3 %4])}])])))
+           :renderRow #(reagent/as-element
+                        [render-row
+                         (gobj/get (nth (gobj/get (.-props d) "argv") 1) "navigator")
+                         %1 %2 %3 %4])}])])))
 
 (def SearchScreen-comp (reagent/create-class {:render (fn [d]
                                                         [render-search-screen d])
