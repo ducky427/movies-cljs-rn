@@ -98,15 +98,16 @@
            :renderSeparator #(render-separator %1 %2 %3)
            :dataSource @d-s
            :renderRow #(render-row
-                        (gobj/get (nth (gobj/get (.-props d) "argv") 1) "navigator")
+                        (:navigator (reagent/props d))
                         %1 %2 %3 %4)}])])))
 
-(def SearchScreen-comp (reagent/create-class {:render (fn [d]
-                                                        [render-search-screen d])
-                                              :component-did-mount (fn []
-                                                                     (ms/search-movies ""))
-                                              :mixins #js [TimerMixin]
-                                              :display-name "Search Screen"}))
+(def SearchScreen-comp (reagent/reactify-component
+                        (reagent/create-class {:render (fn [d]
+                                                         [render-search-screen d])
+                                               :component-did-mount (fn []
+                                                                      (ms/search-movies ""))
+                                               :mixins #js [TimerMixin]
+                                               :display-name "Search Screen"})))
 
 (defn movies-app
   []
