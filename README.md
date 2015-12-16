@@ -1,10 +1,25 @@
 # movies-cljs
 
-A Clojure library designed to ... well, that part is up to you.
+This is a partial working version of the movies example in [React-Native](https://github.com/facebook/react-native/tree/master/Examples/Movies) repo.
+
 
 ## Usage
 
-FIXME
+To run in iOS:
+```
+$ re-natal xcode
+```
+and then run your app from Xcode normally.
+
+
+Start figwheel:
+
+```
+$ re-natal use-figwheel
+$ lein figwheel ios
+```
+
+See [re-natal](https://github.com/drapanjanas/re-natal) for details.
 
 ## License
 
